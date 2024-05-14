@@ -12,7 +12,7 @@ app.use(express.json());
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ceqlkq5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -30,11 +30,26 @@ async function run() {
     await client.connect();
 
 
+
+const userCollection = client.db("Bistro-boss-DB").collection("user");
 const menuCollection = client.db("Bistro-boss-DB").collection("menu");
 const reviewsCollection = client.db("Bistro-boss-DB").collection("reviews");
 const cartCollection = client.db("Bistro-boss-DB").collection("carts");
 
 
+//User related api
+app.post('/users', async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email }
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: 'user already exists', insertedId: null })
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+//----------------//
  app.get('/menu', async (req, res) => {
       const result = await menuCollection.find().toArray();
       res.send(result);
@@ -52,11 +67,19 @@ const cartCollection = client.db("Bistro-boss-DB").collection("carts");
       res.send(result);
     });
 
-
+//get cart item
  app.get('/carts', async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const result = await cartCollection.find(query).toArray();
+      res.send(result);
+    });
+
+//delete a cart
+    app.delete('/carts/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await cartCollection.deleteOne(query);
       res.send(result);
     });
 

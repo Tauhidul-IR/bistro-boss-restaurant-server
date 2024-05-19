@@ -33,8 +33,8 @@ async function run() {
 
 
 const userCollection = client.db("Bistro-boss-DB").collection("user");
-const menuCollection = client.db("Bistro-boss-DB").collection("menu");
-const menu2Collection = client.db("Bistro-boss-DB").collection("menu2");
+// const menuCollection = client.db("Bistro-boss-DB").collection("menu");
+const menuCollection = client.db("Bistro-boss-DB").collection("menu2");
 const reviewsCollection = client.db("Bistro-boss-DB").collection("reviews");
 const cartCollection = client.db("Bistro-boss-DB").collection("carts");
 
@@ -147,15 +147,35 @@ app.delete('/users/:id', verifyToken,verifyAdmin, async (req, res) => {
 
 
 
-//----------------//
+//---------menu--------------------------------------------------//
  app.get('/menu', async (req, res) => {
-      const result = await menu2Collection.find().toArray();
+      const result = await menuCollection.find().toArray();
       res.send(result);
     });
+
+app.post('/menu', verifyToken, verifyAdmin, async (req, res) => {
+      const item = req.body;
+      const result = await menuCollection.insertOne(item);
+      res.send(result);
+    });
+
+app.delete('/menu/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await menuCollection.deleteOne(query);
+      res.send(result);
+    })
+
+
+
+
  app.get('/reviews', async (req, res) => {
       const result = await reviewsCollection.find().toArray();
       res.send(result);
     });
+
+//---------menu--------------------------------------------------//
+
 
 
     //carts collection
